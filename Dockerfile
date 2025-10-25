@@ -1,5 +1,5 @@
 # ===== Stage 1: Build backend =====
-FROM maven:3.9.4-eclipse-temurin-20 AS build
+FROM maven:3.9.4-eclipse-temurin-21 AS build
 
 WORKDIR /app
 
@@ -12,9 +12,8 @@ COPY src ./src
 # Build the project (skip tests for faster builds)
 RUN mvn clean package -DskipTests
 
-# ===== Stage 1: Build backend =====
-FROM maven:3.9.4-eclipse-temurin-21 AS build
-
+# ===== Stage 2: Run backend =====
+FROM eclipse-temurin:21-jre-alpine AS runtime
 
 WORKDIR /app
 
