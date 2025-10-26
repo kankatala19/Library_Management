@@ -9,8 +9,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
 import java.util.HashMap;
+import java.util.Map;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
@@ -30,24 +30,42 @@ public class AuthController {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    // Register new user
+    // Register new student
     @PostMapping("/register")
     public String register(@RequestBody User user) {
+        if(userRepository.existsByUsername(user.getUsername())) {
+            return "Username already exists!";
+        }
+        if(userRepository.existsByEmail(user.getEmail())) {
+            return "Email already exists!";
+        }
+
+        // Assign STUDENT role
+        user.setRole("student");
+
+        // Hash password
         user.setPassword(passwordEncoder.encode(user.getPassword()));
+
+        // Save user
         userRepository.save(user);
+
         return "User registered successfully!";
     }
 
     // Login
     @PostMapping("/login")
     public Map<String, String> login(@RequestBody User user) {
-        authManager.authenticate(new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
-        User dbUser = userRepository.findByUsername(user.getUsername()).get();
+        authManager.authenticate(
+            new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword())
+        );
+
+        User dbUser = userRepository.findByUsername(user.getUsername()).orElseThrow();
         String token = jwtUtil.generateToken(dbUser.getUsername(), dbUser.getRole());
+
         return Map.of("token", token);
     }
 
-    // Current authenticated user profile
+    // Get current authenticated user
     @GetMapping("/me")
     public Map<String, Object> me() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
