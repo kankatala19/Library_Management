@@ -13,7 +13,6 @@ target/
 
 # Config / Secrets
 .env
-**/application.properties
 **/application.yml
 
 # ===== Frontend (React + Vite) =====
